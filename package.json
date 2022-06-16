@@ -39,6 +39,7 @@
     "webpack-dev-server": "^4.9.0"
   },
   "dependencies": {
-    "react-open-weather": "^1.2.0"
+    "npm-upgrade": "^3.1.0",
+    "react-open-weather": "^1.2.1"
   }
 }

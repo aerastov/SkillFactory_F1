@@ -1,22 +1,44 @@
 import * as React from "react";
 import "../styles/Main.css";
-import  { useState, useEffect} from "react";
+import  {useState, useEffect} from "react";
 import axios from "axios";
-import Geolocation from "./Geolocation";
-
-
-import ReactWeather, { useOpenWeather } from 'react-open-weather';
-
-
-let a:string = 'test2';
-
-
+import Current from "./Current_weather";
+import Hourly from "./Hourly_weather";
+import Week from "./Week_weather";
 
 function Main() {
-
     const [city, setCity] = useState('Москва'); // отслеживаем изменение города
     const [lat, setLat] = useState(55.7522); // отслеживаем изменение текущих координат, по умолчанию - Москва
     const [lon, setLon] = useState(37.6156);
+    const [widget, setWidget] = useState('current'); // Отслеживаем какой виджет (компонент) показывать
+    const [current, setCurrent] = useState([]);
+    const [day, setHourly] = useState([]);
+    const [week, setWeek] = useState([]);
+    const [pict, setIcon] = useState('03n');
+    const [key_ipgeolocation, setKey1] = useState();
+    const [key_openweathermap, setKey2] = useState();
+    const citilist = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород',
+    'Челябинск', 'Самара', 'Ростов-на-Дону', 'Уфа', 'Омск', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград'];
+
+
+    // Получаем ключи с моего ресурса
+    useEffect(() => {
+        axios.get(`https://home-update.ru/api/ipgeolocation`).then(res => {
+            setKey1(res.data[0].key);
+        });
+    }, []);
+    useEffect(() => {
+        axios.get(`https://home-update.ru/api/openweathermap_yandex`).then(res => {
+            setKey2(res.data[0].key);
+        });
+    }, []);
+
+
+    // Наполняем содержимое select
+    const options = citilist.map((text, index) => {
+        return <option key={index}>{text}</option>;
+    });
+
 
     // Функции вычисления текущей геопзиции
     function getMyPosition() {
@@ -25,11 +47,10 @@ function Main() {
     function onSuccess(geolocationData) {
         setLat(geolocationData.coords.latitude);
         setLon(geolocationData.coords.longitude);
-        axios.get(`https://api.ipgeolocation.io/timezone?apiKey=xxxxxxxxxxxxxxxxxxxxxx&lat=${lat}&lng=${lon}`).then(res => {
+        setWidget("current");
+        axios.get(`https://api.ipgeolocation.io/timezone?apiKey=${key_ipgeolocation}&lat=${lat}&lng=${lon}`).then(res => {
             setCity(res.data.geo.city);
         });
-
-
     };
     function onError(error) {
       console.log('Информация о местоположении недоступна');
@@ -37,86 +58,75 @@ function Main() {
     };
 
 
-    // let getGeolocation = `https://api.ipgeolocation.io/timezone?apiKey=xxxxxxxxxxxxxxxxxxxxxxxx&lat=${lat}&lng=${lon}`;
-    // axios.get(getGeolocation).then(res => {
-    //         console.log(res);
-    // })
-
-    
-//     const [appState, setAppState] = useState();
-    // useEffect(() => {
-    //   axios.get(getCauntries).then((resp) => {
-    //     console.log('resp', resp)
-    //     setAppState(resp.data);
-    //   });
-    // }, [setAppState]);
-
-    // console.log('posts', appState)
-
-
-
-    const citilist = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород', 
-    'Челябинск', 'Самара', 'Ростов-на-Дону', 'Уфа', 'Омск', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград'];
-
-    // Наполняем содержимое select
-    const options = citilist.map((text, index) => {
-        return <option key={index}>{text}</option>;
-    });
-
-
     // Получаем координаты выбранного города
-    let getWeater = `http://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=xxxxxxxxxxxxxxxxxxxxxxx`
-    // let getWeater = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&exclude=minutely&units=metric&appid=xxxxxxxxxxxxxxxxxxxxxxxxxxxxx`;
-    axios.get(getWeater).then(res => {
+    useEffect(() => {
+        if (key_openweathermap !== undefined) {
+            axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=${key_openweathermap}`).then(res => {
             setLat(res.data[0].lat);
             setLon(res.data[0].lon);
-    });
+            console.log('координаты выбранного города', res.data[0].lat, res.data[0].lon)
+        });
+        };
+    }, [city, key_openweathermap]);
 
-    console.log(lat, lon);
 
-
-    // Настраиваем виджет на выбранный город
-    let { data, isLoading, errorMessage } = useOpenWeather({
-        // key: 'xxxxxxxxxxxxxxxxxxxxxx',
-        key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        lat: lat,
-        lon: lon,
-        lang: 'ru',
-        unit: 'metric',
-    });
+    // Получаем данные о погоде на «сейчас»; «ближайшие два дня» (почасово на двое суток); «на этой неделе» (следующие семь дней).
+    useEffect(() => {
+        if (key_openweathermap !== undefined) {
+            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${key_openweathermap}&units=metric`).then(res => {
+                setCurrent(res.data.current);
+                setHourly(res.data.hourly);
+                setWeek(res.data.daily);
+                setIcon(res.data.current.weather[0].icon);
+                console.log('res.data ', res.data)
+            });
+        };
+    }, [lat, lon, key_openweathermap]);
 
     return (
         <main>
             <div>
+                {(widget === "current" && key_openweathermap !== undefined ) &&
+                    <div>
+                        <Current key1={key_openweathermap} lat={lat} lon={lon} city={city} />
+                    </div>
+                }
 
-                <div className="weatherwidget">
-                 <ReactWeather
-                    isLoading={isLoading}
-                    errorMessage={errorMessage}
-                    data={data}
-                    lang="ru"
-                    locationLabel={city}
-                    unitsLabels={{ temperature: 'C', windSpeed: 'Km/h' }}
-                    showForecast={false}
-                 />
+                {widget === "48hours" &&
+                    <div>
+                        <div className="city">{city}</div>
+                        <div className="widgets">
+                        {day.map((value,index) =>
+                            <Hourly day={index} temp={value.temp} icon={value.weather[0].icon} key={value.dt}/>
+                        )}
+                        </div>
+                    </div>
+                }
+
+                {widget === "week" &&
+                    <div>
+                        <div className="city">{city}</div>
+                        <div className="widgets">
+                            {week.map((value,index) =>
+                                <Week day={index} temp={value.temp.day} icon={value.weather[0].icon} key={value.dt}/>
+                            )}
+                        </div>
+                    </div>
+                }
+                <div className='button'>
+                    <button onClick={getMyPosition}>Найти меня</button>
+                    <select value={city} onChange={e=>setCity(e.target.value)}>
+                        <option disabled>Выберите город</option>
+                        {options}
+                    </select>
+
+                    <button onClick={e=>setWidget("current")}>Сегодня</button>
+                    <button onClick={e=>setWidget("48hours")}>На 48 часов</button>
+                    <button onClick={e=>setWidget("week")}>На неделю</button>
                 </div>
-                <button className="btn" onClick={getMyPosition}>Найти меня</button>
-                <select className='country' value={city} onChange={e=>setCity(e.target.value)}>
-                    <option disabled>Выберите город</option>
-                    {options}
-                </select>
-
-                <button>Погода сейчас</button>
-                <button>На ближайшие два дня</button>
-                <button>На этой неделе</button>
-                <div id="openweathermap-widget-11"></div>
-
             </div>
         </main>
     );
+};
 
-
-}
 export default Main;
-
-
