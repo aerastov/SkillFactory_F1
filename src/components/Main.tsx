@@ -7,6 +7,7 @@ import Hourly from "./Hourly_weather";
 import Week from "./Week_weather";
 
 function Main() {
+    const [isLoading, setLoading] = useState(true);  // Флаг готовности результата axios
     const [city, setCity] = useState('Москва'); // отслеживаем изменение города
     const [lat, setLat] = useState(55.7522); // отслеживаем изменение текущих координат, по умолчанию - Москва
     const [lon, setLon] = useState(37.6156);
@@ -19,6 +20,11 @@ function Main() {
     const [key_openweathermap, setKey2] = useState();
     const citilist = ['Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Казань', 'Нижний Новгород',
     'Челябинск', 'Самара', 'Ростов-на-Дону', 'Уфа', 'Омск', 'Красноярск', 'Воронеж', 'Пермь', 'Волгоград'];
+    // Наполняем содержимое select
+    const options = citilist.map((text, index) => {
+        return <option key={index}>{text}</option>;
+    });
+
 
 
     // Получаем ключи с моего ресурса
@@ -26,18 +32,11 @@ function Main() {
         axios.get(`https://home-update.ru/api/ipgeolocation`).then(res => {
             setKey1(res.data[0].key);
         });
-    }, []);
-    useEffect(() => {
         axios.get(`https://home-update.ru/api/openweathermap_yandex`).then(res => {
             setKey2(res.data[0].key);
         });
     }, []);
 
-
-    // Наполняем содержимое select
-    const options = citilist.map((text, index) => {
-        return <option key={index}>{text}</option>;
-    });
 
 
     // Функции вычисления текущей геопзиции
@@ -45,11 +44,12 @@ function Main() {
         navigator.geolocation.getCurrentPosition(onSuccess, onError);
     };
     function onSuccess(geolocationData) {
+        setLoading(true);
         setLat(geolocationData.coords.latitude);
         setLon(geolocationData.coords.longitude);
-        setWidget("current");
         axios.get(`https://api.ipgeolocation.io/timezone?apiKey=${key_ipgeolocation}&lat=${lat}&lng=${lon}`).then(res => {
             setCity(res.data.geo.city);
+            setLoading(false);
         });
     };
     function onError(error) {
@@ -62,27 +62,30 @@ function Main() {
     useEffect(() => {
         if (key_openweathermap !== undefined) {
             axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=${key_openweathermap}`).then(res => {
-            setLat(res.data[0].lat);
-            setLon(res.data[0].lon);
-            console.log('координаты выбранного города', res.data[0].lat, res.data[0].lon)
-        });
+                setLat(res.data[0].lat);
+                setLon(res.data[0].lon);
+                console.log('координаты выбранного города', res.data[0].lat, res.data[0].lon)
+            });
         };
-    }, [city, key_openweathermap]);
-
-
-    // Получаем данные о погоде на «сейчас»; «ближайшие два дня» (почасово на двое суток); «на этой неделе» (следующие семь дней).
-    useEffect(() => {
+        // Получаем данные о погоде на «сейчас»; «ближайшие два дня» (почасово на двое суток); «на этой неделе» (следующие семь дней).
         if (key_openweathermap !== undefined) {
             axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${key_openweathermap}&units=metric`).then(res => {
                 setCurrent(res.data.current);
                 setHourly(res.data.hourly);
                 setWeek(res.data.daily);
                 setIcon(res.data.current.weather[0].icon);
+                setLoading(false);
                 console.log('res.data ', res.data)
             });
         };
-    }, [lat, lon, key_openweathermap]);
+    }, [city, key_openweathermap]);
 
+    // Если флаг isLoading = false то выводим "Loading..."
+    if (isLoading) {
+        return <h1>Loading...</h1>;
+    }
+
+    // Иначе выводим полученные из axios данные
     return (
         <main>
             <div>
