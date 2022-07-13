@@ -1,6 +1,7 @@
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const WebpackNotifierPlugin = require('webpack-notifier');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const path = require('path');
@@ -17,7 +18,7 @@ module.exports = {
     externals: {
         paths: PATHS,
     },
-    mode: 'development',
+    mode: 'production',
     stats: 'none',
     entry: {
         app: `${PATHS.src}index.tsx`,
@@ -30,8 +31,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: "./src/index.html"
         }),
-        new MiniCssExtractPlugin(),
-        new WebpackNotifierPlugin({ alwaysNotify: false }),
+        new MiniCssExtractPlugin({
+          filename: 'css/[name].[chunkhash].css',
+        }),
+        new CssMinimizerPlugin(),
+        new TerserWebpackPlugin(),
+        new CleanWebpackPlugin(),
     ],
     resolve: {
         extensions: [".js", ".jsx", ".json", ".ts", ".tsx",]
@@ -43,8 +48,9 @@ module.exports = {
                 exclude: '/node_modules/',
                 use: {
                     loader: 'ts-loader',
-                }
+                },
             },
+
             {
                 test: /\.css$/,
                 use: [
@@ -57,7 +63,11 @@ module.exports = {
                     'css-loader',
                 ],
             }
+
         ]
     },
-};
-
+    optimization: {
+    minimize: true,
+    minimizer: [new CssMinimizerPlugin() , new TerserWebpackPlugin({})],
+    },
+  };
