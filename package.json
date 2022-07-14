@@ -16,7 +16,7 @@
     "url": "git+https://github.com/aerastov/SkillFactory_F1.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Erastov Alexey",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/aerastov/SkillFactory_F1/issues"
@@ -43,9 +43,5 @@
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.9.0",
     "webpack-notifier": "^1.15.0"
-  },
-  "dependencies": {
-    "npm-upgrade": "^3.1.0",
-    "react-open-weather": "^1.2.1"
   }
 }

@@ -2,29 +2,26 @@ import * as React from "react";
 import  { useState } from "react";
 import axios from "axios";
 import "../styles/Widget.css";
-import ReactWeather, { useOpenWeather } from 'react-open-weather';
+
 
 function Current(props) {
-    // Настраиваем виджет на выбранный город
-    let { data, isLoading, errorMessage } = useOpenWeather({
-        key: props.key1,
-        lat: props.lat,
-        lon: props.lon,
-        lang: 'ru',
-        unit: 'metric',
-    });
+    const days =["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+    const date = new Date();
 
     return (
-        <div className="weatherwidget">
-            <ReactWeather
-            isLoading={isLoading}
-            errorMessage={errorMessage}
-            data={data}
-            lang="ru"
-            locationLabel={props.city}
-            unitsLabels={{ temperature: 'C', windSpeed: 'Km/h' }}
-            showForecast={false}
-            />
+        <div className="current">
+            <div className="weather-left">
+                <div className="weather-city">{props.city}</div>
+                <h2 className="date"> {date.toLocaleDateString()}, {days[date.getDay()]} </h2>
+                <img src={`http://openweathermap.org/img/wn/${props.icon}.png`} alt="" width="100" />
+                <div className="desc-main">{props.description}</div>
+                <div className="feels-like">{props.feels_like}°</div>
+            </div>
+
+            <div className="weather-right">
+                <div className="temp-main">{props.temp}°</div>
+                <div className="wind">Ветер: {props.wind_speed}m/s</div>
+            </div>
         </div>
     );
 };

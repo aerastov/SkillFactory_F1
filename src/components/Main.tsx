@@ -13,6 +13,10 @@ function Main() {
     const [lon, setLon] = useState(37.6156);
     const [widget, setWidget] = useState('current'); // Отслеживаем какой виджет (компонент) показывать
     const [current, setCurrent] = useState([]);
+    const [feels_like, setFeels_like] = useState([]);
+    const [temp, setTemp] = useState([]);
+    const [wind_speed, setWind_speed] = useState([]);
+    const [description, setDescription] = useState([]);
     const [day, setHourly] = useState([]);
     const [week, setWeek] = useState([]);
     const [pict, setIcon] = useState('03n');
@@ -25,8 +29,6 @@ function Main() {
         return <option key={index}>{text}</option>;
     });
 
-
-
     // Получаем ключи с моего ресурса
     useEffect(() => {
         axios.get(`https://home-update.ru/api/ipgeolocation`).then(res => {
@@ -36,8 +38,6 @@ function Main() {
             setKey2(res.data[0].key);
         });
     }, []);
-
-
 
     // Функции вычисления текущей геопзиции
     function getMyPosition() {
@@ -57,9 +57,9 @@ function Main() {
       console.log(error.message);
     };
 
-
-    // Получаем координаты выбранного города
+    // Получаем координаты выбранного города и текущую дату
     useEffect(() => {
+
         if (key_openweathermap !== undefined) {
             axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=${key_openweathermap}`).then(res => {
                 setLat(res.data[0].lat);
@@ -71,6 +71,10 @@ function Main() {
         if (key_openweathermap !== undefined) {
             axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${key_openweathermap}&units=metric`).then(res => {
                 setCurrent(res.data.current);
+                setDescription(res.data.current.weather[0].description);
+                setFeels_like(res.data.current.feels_like);
+                setTemp(res.data.current.temp);
+                setWind_speed(res.data.current.wind_speed);
                 setHourly(res.data.hourly);
                 setWeek(res.data.daily);
                 setIcon(res.data.current.weather[0].icon);
@@ -88,10 +92,24 @@ function Main() {
     // Иначе выводим полученные из axios данные
     return (
         <main>
-            <div>
+            <div className="cover">
+
+                <div className='button'>
+                    <button onClick={getMyPosition}>Найти меня</button>
+                    <select value={city} onChange={e=>setCity(e.target.value)}>
+                        <option disabled>Выберите город</option>
+                        {options}
+                    </select>
+
+                    <button onClick={e=>setWidget("current")}>Сегодня</button>
+                    <button onClick={e=>setWidget("48hours")}>На 48 часов</button>
+                    <button onClick={e=>setWidget("week")}>На неделю</button>
+                </div>
+
                 {(widget === "current" && key_openweathermap !== undefined ) &&
                     <div>
-                        <Current key1={key_openweathermap} lat={lat} lon={lon} city={city} />
+                        <Current key1={key_openweathermap} lat={lat} lon={lon} city={city} icon={pict}
+                        description={description} feels_like={feels_like} temp={temp} wind_speed={wind_speed}/>
                     </div>
                 }
 
@@ -116,17 +134,6 @@ function Main() {
                         </div>
                     </div>
                 }
-                <div className='button'>
-                    <button onClick={getMyPosition}>Найти меня</button>
-                    <select value={city} onChange={e=>setCity(e.target.value)}>
-                        <option disabled>Выберите город</option>
-                        {options}
-                    </select>
-
-                    <button onClick={e=>setWidget("current")}>Сегодня</button>
-                    <button onClick={e=>setWidget("48hours")}>На 48 часов</button>
-                    <button onClick={e=>setWidget("week")}>На неделю</button>
-                </div>
             </div>
         </main>
     );
