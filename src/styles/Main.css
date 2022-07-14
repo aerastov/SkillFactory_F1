@@ -5,6 +5,7 @@ body {
     background-color: rgb(0, 0, 0);
 }
 .cover {
+    font-family: "Nunito", Georgia, Serif;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -37,6 +38,7 @@ div .button {
     flex-flow: row wrap;
 }
 button, select {
+    font-family: "Nunito", Georgia, Serif;
     border-style: none;
     border-radius: 9px;
 

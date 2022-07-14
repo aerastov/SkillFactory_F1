@@ -57,7 +57,7 @@ function Main() {
       console.log(error.message);
     };
 
-    // Получаем координаты выбранного города и текущую дату
+    // Получаем координаты выбранного города
     useEffect(() => {
 
         if (key_openweathermap !== undefined) {
