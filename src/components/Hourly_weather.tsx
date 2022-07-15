@@ -23,7 +23,7 @@ function Hourly(props) {
                     {((props.day > 44) && (props.day < 48)) && `Через ${props.day} часов` }
                 </div>
                 <div className="temp">
-                   <img src={`http://openweathermap.org/img/wn/${props.icon}.png`} alt="" width="60"/>
+                   <img src={`https://openweathermap.org/img/wn/${props.icon}.png`} alt="" width="60"/>
                    {Math.round(props.temp)}&deg;
                 </div>
             </div>

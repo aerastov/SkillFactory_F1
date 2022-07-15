@@ -14,7 +14,7 @@ function Week(props) {
                     {(props.day > 4) && `Через ${props.day} дней` }
                 </div>
                 <div className="temp">
-                   <img src={`http://openweathermap.org/img/wn/${props.icon}.png`} alt="" width="60"/>
+                   <img src={`https://openweathermap.org/img/wn/${props.icon}.png`} alt="" width="60"/>
                    {Math.round(props.temp)}&deg;
                 </div>
             </div>
