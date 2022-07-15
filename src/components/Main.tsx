@@ -61,7 +61,7 @@ function Main() {
     useEffect(() => {
 
         if (key_openweathermap !== undefined) {
-            axios.get(`http://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=${key_openweathermap}`).then(res => {
+            axios.get(`https://api.openweathermap.org/geo/1.0/direct?q=${city}','RUS'&limit=1&appid=${key_openweathermap}`).then(res => {
                 setLat(res.data[0].lat);
                 setLon(res.data[0].lon);
                 console.log('координаты выбранного города', res.data[0].lat, res.data[0].lon)
